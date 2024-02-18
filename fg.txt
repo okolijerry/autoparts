@@ -1,0 +1,269 @@
+/*import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "../ui/textarea";
+import FileUploader from "../shared/FileUploader";
+import { postValidation } from "../ui/lib/validation";
+import { Models } from "appwrite";
+import { useCreatePost } from "../ui/lib/react-query/QueriesAndMutations";
+import { useUserContext } from "@/context/AuthContext";
+import { useToast } from "../ui/use-toast";
+
+type PostFormProps = {
+  post?: Models.Document;
+};
+const PostForm = ({ post }: PostFormProps) => {
+  const { mutateAsync: createPost, isPending: isLoadingCreate } =
+    useCreatePost();
+  const { user } = useUserContext();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const form = useForm<z.infer<typeof postValidation>>({
+    resolver: zodResolver(postValidation),
+    defaultValues: {
+      caption: post ? post?.caption : "",
+      file: [],
+      location: post ? post?.location : "",
+      tags: post ? post.tags.join(",") : "",
+    },
+  });
+
+  // 2. Define a submit handler.
+  async function onSubmit(values: z.infer<typeof postValidation>) {
+    // Do something with the form values.
+    // ✅ This will be type-safe and validated.
+    const newPost = await createPost({
+      ...values,
+      userId: user.id,
+    });
+
+    if (!newPost) {
+      toast({
+        title: "Please try again",
+      });
+    }
+
+    navigate("/");
+  }
+  return (
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="flex flex-col gap-9 w-full max-w-5xl"
+      >
+        <FormField
+          control={form.control}
+          name="caption"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="shad-form_label">Caption</FormLabel>
+              <FormControl>
+                <Textarea
+                  className="shad-textarea custom-scrollbar"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage className="shad-form_message" />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="file"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="shad-form_label">Add Photo</FormLabel>
+              <FormControl>
+                <FileUploader
+                  fieldChange={field.onChange}
+                  mediaUrl={post?.imageUrl}
+                />
+              </FormControl>
+              <FormMessage className="shad-form_message" />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="location"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="shad-form_label">Add Location</FormLabel>
+              <FormControl>
+                <Input type="text" className="shad-input" {...field} />
+              </FormControl>
+              <FormMessage className="shad-form_message" />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="tags"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="shad-form_label">
+                Add Tags(seperated by comma " , ")
+              </FormLabel>
+              <FormControl>
+                <Input
+                  type="text"
+                  className="shad-input"
+                  placeholder="Art, Learn, Music"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage className="shad-form_message" />
+            </FormItem>
+          )}
+        />
+
+        <div className="flex gap-4 items-center justify-end">
+          <Button type="button" className="shad-button_dark_4">
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            className="shad-button_primary whitespace-nowrap"
+          >
+            Submit
+          </Button>
+        </div>
+      </form>
+    </Form>
+  );
+};
+
+export default PostForm;*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import { useNavigate } from "react-router-dom";
+import { createContext, useContext, useEffect, useState } from "react";
+
+import { IUser } from "@/types";
+import { getCurrentUser } from "@/components/ui/lib/appwrite/api";
+
+export const INITIAL_USER = {
+  id: "",
+  name: "",
+  username: "",
+  email: "",
+  imageUrl: "",
+  bio: "",
+};
+
+const INITIAL_STATE = {
+  user: INITIAL_USER,
+  isLoading: false,
+  isAuthenticated: false,
+  setUser: () => {},
+  setIsAuthenticated: () => {},
+  checkAuthUser: async () => false as boolean,
+};
+
+
+type IContextType = {
+  user: IUser;
+  isLoading: boolean;
+  setUser: React.Dispatch<React.SetStateAction<IUser>>;
+  isAuthenticated: boolean;
+  setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean>>;
+  checkAuthUser: () => Promise<boolean>;
+};
+
+const AuthContext = createContext<IContextType>(INITIAL_STATE);
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const navigate = useNavigate();
+  const [user, setUser] = useState<IUser>(INITIAL_USER);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const checkAuthUser = async () => {
+    setIsLoading(true);
+    try {
+      const currentAccount = await getCurrentUser();
+      if (currentAccount) {
+        setUser({
+          id: currentAccount.$id,
+          name: currentAccount.name,
+          username: currentAccount.username,
+          email: currentAccount.email,
+          imageUrl: currentAccount.imageUrl,
+          bio: currentAccount.bio,
+        });
+        setIsAuthenticated(true);
+
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.error(error);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const cookieFallback = localStorage.getItem("cookieFallback");
+    if (
+      cookieFallback === "[]" ||
+      cookieFallback === null ||
+      cookieFallback === undefined
+    ) {
+      navigate("/sign-in");
+    }
+
+    checkAuthUser();
+  }, []);
+
+  const value = {
+    user,
+    setUser,
+    isLoading,
+    isAuthenticated,
+    setIsAuthenticated,
+    checkAuthUser,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export default AuthProvider;
+
+export const useUserContext = () => useContext(AuthContext);
