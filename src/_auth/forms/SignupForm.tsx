@@ -4,7 +4,6 @@ import { useToast } from "@/components/ui/use-toast";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -25,14 +24,13 @@ import { useUserContext } from "@/context/AuthContext";
 
 const SignupForm = () => {
   const { toast } = useToast();
-  const { checkAuthUser, isLoading: isUserLoading } = useUserContext();
+  const { checkAuthUser } = useUserContext();
   const navigate = useNavigate();
 
   const { mutateAsync: createUserAccount, isPending: isCreatingUser } =
     useCreateUserAccount();
 
-  const { mutateAsync: signInAccount, isPending: isSigningIn } =
-    useSignInAccount();
+  const { mutateAsync: signInAccount } = useSignInAccount();
   // 1. Define your form.
   const form = useForm<z.infer<typeof signupValidation>>({
     resolver: zodResolver(signupValidation),

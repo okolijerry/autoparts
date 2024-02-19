@@ -9,7 +9,6 @@ import {
   Profile,
   Saved,
   UpdateProfile,
-  LikedPosts,
 } from "./_root/pages";
 
 import SigninForm from "./_auth/forms/SigninForm";

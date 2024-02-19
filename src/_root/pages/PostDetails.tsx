@@ -1,5 +1,4 @@
 import Loader from "@/components/shared/Loader";
-import PostStats from "@/components/shared/PostStats";
 import { Button } from "@/components/ui/button";
 import { useGetPostById } from "@/components/ui/lib/react-query/QueriesAndMutations";
 import { multiFormatDateString } from "@/components/ui/lib/utils";
@@ -92,9 +91,7 @@ const PostDetails = () => {
               </ul>
             </div>
 
-            <div className="w-full ">
-              <PostStats post={post} userId={user.id} />
-            </div>
+            <div className="w-full "></div>
           </div>
         </div>
       )}

@@ -5,11 +5,7 @@ import { useGetRecentPosts } from "@/components/ui/lib/react-query/QueriesAndMut
 import { Models } from "appwrite";
 
 const Home = () => {
-  const {
-    data: posts,
-    isPending: isPostLoading,
-    isError: isErrorPosts,
-  } = useGetRecentPosts();
+  const { data: posts, isPending: isPostLoading } = useGetRecentPosts();
   return (
     <div className="flex flex-1">
       <div className="home-container">
